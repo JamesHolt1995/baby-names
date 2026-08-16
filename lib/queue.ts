@@ -7,6 +7,9 @@ import { ensureNamesCached } from './names'
 
 const otherUserOf: Record<UserId, UserId> = { james: 'emma', emma: 'james' }
 
+// Deliberately has no field for the partner's action — seeing that they
+// shortlisted/loved a name before forming your own opinion would bias the
+// swipe, even though it's exactly what drives the priority ordering below.
 export type QueueCard = {
   id: number
   name: string
@@ -14,7 +17,6 @@ export type QueueCard = {
   usages: { code: string; full: string }[]
   meaning: string | null
   meaningUrl: string | null
-  partnerAction: 'shortlist' | 'love' | null
 }
 
 const cardColumns = {
@@ -44,7 +46,7 @@ export async function getNextCardForUser(
   const swipesOther = alias(swipes, 'swipes_other')
 
   const [priorityCard] = await db
-    .select({ ...cardColumns, partnerAction: swipesOther.action })
+    .select(cardColumns)
     .from(names)
     .innerJoin(
       swipesOther,
@@ -60,7 +62,7 @@ export async function getNextCardForUser(
   const fetchFreshCard = async () => {
     const swipesSelfOnly = alias(swipes, 'swipes_self_only')
     const [freshCard] = await db
-      .select({ ...cardColumns, partnerAction: sql<null>`null` })
+      .select(cardColumns)
       .from(names)
       .leftJoin(swipesSelfOnly, and(eq(swipesSelfOnly.nameId, names.id), eq(swipesSelfOnly.userId, userId)))
       .where(isNull(swipesSelfOnly.id))

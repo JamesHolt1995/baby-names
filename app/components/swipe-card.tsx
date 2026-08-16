@@ -24,7 +24,6 @@ export type QueueCard = {
 	usages: { code: string; full: string }[];
 	meaning: string | null;
 	meaningUrl: string | null;
-	partnerAction: "shortlist" | "love" | null;
 };
 
 const SWIPE_THRESHOLD = 120;
@@ -168,13 +167,6 @@ function SwipeCard({
 				<div className="flex flex-col items-center gap-3 py-6 text-center">
 					<Heading className="text-4xl!">{card.name}</Heading>
 					<GenderBadge gender={card.gender} />
-
-					{card.partnerAction && (
-						<Badge color="violet">
-							Your partner{" "}
-							{card.partnerAction === "love" ? "loved" : "shortlisted"} this
-						</Badge>
-					)}
 
 					{card.meaning && (
 						<div className="flex flex-col items-center gap-1">
