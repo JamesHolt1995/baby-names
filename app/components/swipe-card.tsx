@@ -66,7 +66,7 @@ export function SwipeDeck({ initialCard }: { initialCard: QueueCard | null }) {
 	if (card === undefined) {
 		return (
 			<div className="flex flex-1 items-center justify-center">
-				<Text>Loading..</Text>
+				<Text>Loading...</Text>
 			</div>
 		);
 	}
