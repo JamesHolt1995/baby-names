@@ -3,6 +3,7 @@ import { and, eq, ilike } from 'drizzle-orm'
 import { getDb } from './db/client'
 import { names, type Gender } from './db/schema'
 import { fetchRandomNames, lookupName } from './behindthename'
+import { fetchPopularNames } from './api-ninjas'
 import { fetchNameMeaning } from './wikipedia'
 
 function titleCase(raw: string) {
@@ -24,20 +25,21 @@ async function findExisting(name: string, gender: Gender) {
 }
 
 /**
- * Pulls fresh random names from BehindTheName until at least `targetCount`
- * new rows have been cached locally (or we give up after a few attempts —
- * every name we pull back has already been recognized by the API, so misses
- * should be rare). Enrichment (usages + best-effort Wikipedia meaning) is
- * fetched in parallel per name.
+ * Pulls fresh names — from BehindTheName's random pool, or from API Ninjas'
+ * real-world-popular names when `preferPopular` is set — until at least
+ * `targetCount` new rows have been cached locally (or we give up after a few
+ * attempts). Either way, BehindTheName's lookupName() is still used to
+ * confirm gender + usages, since API Ninjas doesn't return those. Enrichment
+ * (usages + best-effort Wikipedia meaning) is fetched per name.
  */
-export async function ensureNamesCached(targetCount = 6) {
+export async function ensureNamesCached(targetCount = 6, options: { preferPopular?: boolean } = {}) {
   const db = getDb()
   let inserted = 0
   let attempts = 0
 
   while (inserted < targetCount && attempts < 4) {
     attempts += 1
-    const candidates = await fetchRandomNames(6)
+    const candidates = options.preferPopular ? await fetchPopularNames() : await fetchRandomNames(6)
 
     for (const raw of candidates) {
       const details = await lookupName(raw)
@@ -56,7 +58,7 @@ export async function ensureNamesCached(targetCount = 6) {
           usages: details.usages,
           meaning: meaning?.meaning,
           meaningUrl: meaning?.url,
-          source: 'api',
+          source: options.preferPopular ? 'api_ninjas' : 'behindthename',
         })
         .onConflictDoNothing()
 

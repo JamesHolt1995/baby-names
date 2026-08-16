@@ -2,12 +2,12 @@ import 'server-only'
 import { and, eq } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { getDb } from './db/client'
-import { names, swipes, type SwipeAction, type UserId } from './db/schema'
+import { names, swipes, type Gender, type SwipeAction, type UserId } from './db/schema'
 
 export type NameRow = {
   id: number
   name: string
-  gender: 'f' | 'm'
+  gender: Gender
   usages: { code: string; full: string }[]
   meaning: string | null
   meaningUrl: string | null

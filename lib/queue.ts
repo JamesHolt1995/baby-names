@@ -2,7 +2,7 @@ import 'server-only'
 import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { getDb } from './db/client'
-import { names, swipes, type UserId } from './db/schema'
+import { names, swipes, type Gender, type UserId } from './db/schema'
 import { ensureNamesCached } from './names'
 
 const otherUserOf: Record<UserId, UserId> = { james: 'emma', emma: 'james' }
@@ -10,7 +10,7 @@ const otherUserOf: Record<UserId, UserId> = { james: 'emma', emma: 'james' }
 export type QueueCard = {
   id: number
   name: string
-  gender: 'f' | 'm'
+  gender: Gender
   usages: { code: string; full: string }[]
   meaning: string | null
   meaningUrl: string | null
@@ -30,9 +30,13 @@ const cardColumns = {
  * Picks the next name to show `userId`: names their partner has already
  * shortlisted/loved (and this user hasn't seen) take priority over anything
  * new, and "loved" outranks "shortlisted". Falls back to fresh names from the
- * local cache, then pulls more from BehindTheName if that cache is dry.
+ * local cache, then pulls more (from BehindTheName, or from API Ninjas'
+ * popular names if `preferPopular` is set) if that cache is dry.
  */
-export async function getNextCardForUser(userId: UserId): Promise<QueueCard | null> {
+export async function getNextCardForUser(
+  userId: UserId,
+  options: { preferPopular?: boolean } = {}
+): Promise<QueueCard | null> {
   const db = getDb()
   const otherUser = otherUserOf[userId]
 
@@ -68,7 +72,7 @@ export async function getNextCardForUser(userId: UserId): Promise<QueueCard | nu
   const freshCard = await fetchFreshCard()
   if (freshCard) return freshCard
 
-  const insertedCount = await ensureNamesCached(6)
+  const insertedCount = await ensureNamesCached(6, { preferPopular: options.preferPopular })
   if (insertedCount === 0) return null
 
   return fetchFreshCard()

@@ -58,6 +58,7 @@ export function AddNameForm() {
             <Select value={gender} onChange={(e) => setGender(e.target.value as Gender)}>
               <option value="f">Girl</option>
               <option value="m">Boy</option>
+              <option value="unisex">Neutral</option>
             </Select>
           </Field>
           <div className="flex gap-2">

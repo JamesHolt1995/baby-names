@@ -4,6 +4,7 @@ import { getResults, type NameRow } from '@/lib/results'
 import type { SwipeAction, UserId } from '@/lib/db/schema'
 import { AddNameForm } from '../components/add-name-form'
 import { NameActions } from '../components/name-actions'
+import { GenderBadge } from '../components/gender-badge'
 import { Heading, Subheading } from '../components/heading'
 import { Badge } from '../components/badge'
 import { Text } from '../components/text'
@@ -106,7 +107,7 @@ function NameTable({ rows, userId, showActions = false }: { rows: NameRow[]; use
               <TableCell>
                 <div className="flex flex-col gap-1">
                   <span className="font-medium">
-                    {row.name} <Badge color={row.gender === 'f' ? 'pink' : 'blue'}>{row.gender === 'f' ? 'Girl' : 'Boy'}</Badge>
+                    {row.name} <GenderBadge gender={row.gender} />
                   </span>
                   {row.meaning && <Text className="line-clamp-2 max-w-md text-xs">{row.meaning}</Text>}
                 </div>

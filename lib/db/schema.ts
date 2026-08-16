@@ -5,7 +5,9 @@ export type NameUsage = { code: string; full: string }
 export const USER_IDS = ['james', 'emma'] as const
 export type UserId = (typeof USER_IDS)[number]
 
-export const GENDERS = ['f', 'm'] as const
+// BehindTheName only ever returns 'f' or 'm' for a looked-up name, but a
+// manually-added name can be tagged 'unisex' too.
+export const GENDERS = ['f', 'm', 'unisex'] as const
 export type Gender = (typeof GENDERS)[number]
 
 export const SWIPE_ACTIONS = ['veto', 'shortlist', 'love'] as const
@@ -20,7 +22,7 @@ export const names = pgTable(
     usages: jsonb('usages').$type<NameUsage[]>().notNull().default([]),
     meaning: text('meaning'),
     meaningUrl: text('meaning_url'),
-    source: text('source').$type<'api' | 'custom'>().notNull().default('api'),
+    source: text('source').$type<'behindthename' | 'api_ninjas' | 'custom'>().notNull().default('behindthename'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => [unique('names_name_gender_unique').on(table.name, table.gender)]

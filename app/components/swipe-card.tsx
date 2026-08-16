@@ -9,15 +9,18 @@ import {
 } from "motion/react";
 import { Button } from "./button";
 import { Badge } from "./badge";
+import { GenderBadge } from "./gender-badge";
 import { Heading } from "./heading";
+import { PopularToggle } from "./popular-toggle";
 import { Text, TextLink } from "./text";
+import type { Gender } from "@/lib/db/schema";
 
 export type SwipeAction = "veto" | "shortlist" | "love";
 
 export type QueueCard = {
 	id: number;
 	name: string;
-	gender: "f" | "m";
+	gender: Gender;
 	usages: { code: string; full: string }[];
 	meaning: string | null;
 	meaningUrl: string | null;
@@ -26,7 +29,13 @@ export type QueueCard = {
 
 const SWIPE_THRESHOLD = 120;
 
-export function SwipeDeck({ initialCard }: { initialCard: QueueCard | null }) {
+export function SwipeDeck({
+	initialCard,
+	initialPreferPopular,
+}: {
+	initialCard: QueueCard | null;
+	initialPreferPopular: boolean;
+}) {
 	// The first card is fetched server-side by app/page.tsx and passed in —
 	// no fetch-on-mount here, so there's nothing to load before this renders.
 	const [card, setCard] = useState<QueueCard | null | undefined>(initialCard);
@@ -63,36 +72,40 @@ export function SwipeDeck({ initialCard }: { initialCard: QueueCard | null }) {
 		}
 	}
 
-	if (card === undefined) {
-		return (
-			<div className="flex flex-1 items-center justify-center">
-				<Text>Loading...</Text>
+	return (
+		<div className="flex flex-1 flex-col">
+			<div className="flex justify-center border-b border-zinc-950/10 p-4 dark:border-white/10">
+				<PopularToggle initialValue={initialPreferPopular} />
 			</div>
-		);
-	}
 
-	if (error) {
-		return (
-			<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-				<Text>{error}</Text>
-				<Button onClick={loadNext}>Try again</Button>
-			</div>
-		);
-	}
+			{card === undefined && (
+				<div className="flex flex-1 items-center justify-center">
+					<Text>Loading...</Text>
+				</div>
+			)}
 
-	if (!card) {
-		return (
-			<div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-				<Heading>You&rsquo;re all caught up!</Heading>
-				<Text>
-					No new names right now — check back later, or add one yourself on
-					&ldquo;My Names&rdquo;.
-				</Text>
-			</div>
-		);
-	}
+			{card !== undefined && error && (
+				<div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+					<Text>{error}</Text>
+					<Button onClick={loadNext}>Try again</Button>
+				</div>
+			)}
 
-	return <SwipeCard key={card.id} card={card} onAct={act} />;
+			{card !== undefined && !error && card === null && (
+				<div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+					<Heading>You&rsquo;re all caught up!</Heading>
+					<Text>
+						No new names right now — check back later, or add one yourself on
+						&ldquo;My Names&rdquo;.
+					</Text>
+				</div>
+			)}
+
+			{card !== undefined && !error && card && (
+				<SwipeCard key={card.id} card={card} onAct={act} />
+			)}
+		</div>
+	);
 }
 
 function SwipeCard({
@@ -154,9 +167,7 @@ function SwipeCard({
 
 				<div className="flex flex-col items-center gap-3 py-6 text-center">
 					<Heading className="text-4xl!">{card.name}</Heading>
-					<Badge color={card.gender === "f" ? "pink" : "blue"}>
-						{card.gender === "f" ? "Girl" : "Boy"}
-					</Badge>
+					<GenderBadge gender={card.gender} />
 
 					{card.partnerAction && (
 						<Badge color="violet">
