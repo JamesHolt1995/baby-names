@@ -121,7 +121,7 @@ function SwipeCard({
 	}
 
 	return (
-		<div className="flex flex-1 flex-col items-center justify-center gap-6 p-4">
+		<div className="flex flex-1 flex-col items-center justify-center gap-6 overflow-y-auto p-4">
 			<motion.div
 				drag
 				style={{ x, y, rotate }}
@@ -166,21 +166,19 @@ function SwipeCard({
 					)}
 
 					{card.meaning && (
-						<Text>
-							{card.meaning}
+						<div className="flex flex-col items-center gap-1">
+							<Text className="line-clamp-4">{card.meaning}</Text>
 							{card.meaningUrl && (
-								<>
-									{" "}
-									<TextLink
-										href={card.meaningUrl}
-										target="_blank"
-										rel="noreferrer"
-									>
-										(via Wikipedia)
-									</TextLink>
-								</>
+								<TextLink
+									href={card.meaningUrl}
+									target="_blank"
+									rel="noreferrer"
+									className="text-xs"
+								>
+									Read more on Wikipedia →
+								</TextLink>
 							)}
-						</Text>
+						</div>
 					)}
 
 					{card.usages.length > 0 && (

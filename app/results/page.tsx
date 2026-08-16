@@ -108,7 +108,7 @@ function NameTable({ rows, userId, showActions = false }: { rows: NameRow[]; use
                   <span className="font-medium">
                     {row.name} <Badge color={row.gender === 'f' ? 'pink' : 'blue'}>{row.gender === 'f' ? 'Girl' : 'Boy'}</Badge>
                   </span>
-                  {row.meaning && <Text className="max-w-md text-xs">{row.meaning}</Text>}
+                  {row.meaning && <Text className="line-clamp-2 max-w-md text-xs">{row.meaning}</Text>}
                 </div>
               </TableCell>
               <TableCell>{actionBadge(row.jamesAction)}</TableCell>
