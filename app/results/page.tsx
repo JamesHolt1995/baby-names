@@ -1,15 +1,11 @@
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/session'
 import { getResults, type NameRow } from '@/lib/results'
-import type { SwipeAction, UserId } from '@/lib/db/schema'
 import { AddNameForm } from '../components/add-name-form'
-import { NameActions } from '../components/name-actions'
-import { GenderBadge } from '../components/gender-badge'
+import { NameTable } from '../components/name-table'
 import { Heading, Subheading } from '../components/heading'
-import { Badge } from '../components/badge'
 import { Text } from '../components/text'
 import { Divider } from '../components/divider'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/table'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +26,17 @@ export default async function ResultsPage() {
 
       <Divider soft />
 
+      <Section
+        title="Agreed"
+        description="Names you both shortlisted and/or loved."
+        empty="No matches yet — keep swiping!"
+        rows={agreed}
+      >
+        <NameTable rows={agreed} userId={userId} />
+      </Section>
+
+      <Divider soft />
+
       <Section title="Your list" empty="Nothing shortlisted or loved yet — get swiping!" rows={yours}>
         <NameTable rows={yours} userId={userId} showActions />
       </Section>
@@ -43,17 +50,6 @@ export default async function ResultsPage() {
         rows={disputed}
       >
         <NameTable rows={disputed} userId={userId} />
-      </Section>
-
-      <Divider soft />
-
-      <Section
-        title="Agreed"
-        description="Names you both shortlisted and/or loved."
-        empty="No matches yet — keep swiping!"
-        rows={agreed}
-      >
-        <NameTable rows={agreed} userId={userId} />
       </Section>
     </div>
   )
@@ -78,51 +74,5 @@ function Section({
       {description && <Text>{description}</Text>}
       {rows.length === 0 ? <Text>{empty}</Text> : children}
     </section>
-  )
-}
-
-function actionBadge(action: SwipeAction | null) {
-  if (action === 'love') return <Badge color="pink">Loved</Badge>
-  if (action === 'shortlist') return <Badge color="green">Shortlisted</Badge>
-  if (action === 'veto') return <Badge color="red">Vetoed</Badge>
-  return <Badge color="zinc">Not seen</Badge>
-}
-
-function NameTable({ rows, userId, showActions = false }: { rows: NameRow[]; userId: UserId; showActions?: boolean }) {
-  return (
-    <Table dense>
-      <TableHead>
-        <TableRow>
-          <TableHeader>Name</TableHeader>
-          <TableHeader>James</TableHeader>
-          <TableHeader>Emma</TableHeader>
-          {showActions && <TableHeader />}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {rows.map((row) => {
-          const myAction = userId === 'james' ? row.jamesAction : row.emmaAction
-          return (
-            <TableRow key={row.id}>
-              <TableCell>
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">
-                    {row.name} <GenderBadge gender={row.gender} />
-                  </span>
-                  {row.meaning && <Text className="line-clamp-2 max-w-md text-xs">{row.meaning}</Text>}
-                </div>
-              </TableCell>
-              <TableCell>{actionBadge(row.jamesAction)}</TableCell>
-              <TableCell>{actionBadge(row.emmaAction)}</TableCell>
-              {showActions && (
-                <TableCell>
-                  <NameActions nameId={row.id} action={myAction ?? 'shortlist'} />
-                </TableCell>
-              )}
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
   )
 }
